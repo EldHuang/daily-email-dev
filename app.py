@@ -1,7 +1,40 @@
 from flask import Flask, render_template
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy import Integer, String
+
+# =============== Initialize SQLAlchemy + Flask =============== #
+
+class Base(DeclarativeBase):
+  pass
+db = SQLAlchemy(model_class=Base)
 
 app = Flask(__name__)
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///users.db"
+db.init_app(app)
 
+# =============== Configure Users Database =============== #
+
+class User(db.Model):
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+
+    # Login Details
+    username: Mapped[str] = mapped_column(String, unique=True)
+    email: Mapped[str] = mapped_column(String)
+    password: Mapped[int] = mapped_column(String)
+
+    # Canvas Details
+    canvas_token: Mapped[str] = mapped_column(String, unique=True)
+    send_email: Mapped[str] = mapped_column(String)
+    app_password: Mapped[str] = mapped_column(String)
+
+    # Send Time Details
+    send_time: Mapped[int] = mapped_column(Integer)
+
+with app.app_context():
+    db.create_all()
+
+# =============== App Routes =============== #
 @app.route("/")
 def home():
     return render_template("index.html")

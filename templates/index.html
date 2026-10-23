@@ -3,5 +3,48 @@
 {% block title %}CanvGrades{% endblock %}
 
 {% block body %}
-
+    <div class="container 2xl:col-8 px-4 py-5">
+       <div class="row lg:flex-row-reverse align-items-center g-5 py-5">
+          <div class="col-10 sm:col-8 lg:col-6">
+             <img
+                src="https://picsum.photos/700/500"
+                class="d-block lg:mx-auto img-fluid"
+                alt="Title Picture"
+                width="700"
+                height="500"
+                loading="lazy"
+                style="border-radius: 25px;"
+             />
+          </div>
+          <div class="lg:col-6">
+             <h1 class="fs-4xl fw-bold fg-emphasis-inverse lh-1 mb-3">
+                CanvGrades
+             </h1>
+             <p class="fs-lg fw-light">
+                Stay on top of your grades with automated Canvas updates delivered
+                 straight to your inbox. Customize your email schedule, track your
+                 academic performance, get the insights you need—all without manually
+                 checking Canvas. Simple, reliable, and built around your schedule.
+             </p>
+             <div class="d-grid gap-2 md:d-flex md:justify-content-start">
+                 <a href="{{ url_for("register") }}">
+                    <button
+                       type="button"
+                       class="btn-solid theme-primary btn-lg px-4 md:me-2"
+                    >
+                        Register
+                    </button>
+                 </a>
+                 <a href="{{ url_for("login") }}">
+                <button
+                   type="button"
+                   class="btn-outline theme-secondary btn-lg px-4"
+                >
+                   Login
+                </button>
+                 </a>
+             </div>
+          </div>
+       </div>
+    </div>
 {% endblock %}
