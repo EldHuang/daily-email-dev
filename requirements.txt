@@ -1,0 +1,9 @@
+flask
+bootstrap-flask
+flask_wtf
+flask_login
+
+flask_sqlalchemy
+sqlalchemy
+
+argon2

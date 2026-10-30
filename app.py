@@ -1,6 +1,6 @@
 from flask import Flask, render_template
-from flask_bootstrap import Bootstrap5
 from flask_wtf.csrf import CSRFProtect
+from flask_login import LoginManager, login_required
 
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -9,24 +9,39 @@ from sqlalchemy import Integer, String
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 
+from flask_bootstrap import Bootstrap5
+
 from forms import *
 
-# =============== Initialize SQLAlchemy + Flask + Boostrap + Argon2id Hasher =============== #
+# =============== Initialize =============== #
 
-class Base(DeclarativeBase):
-  pass
+# Create SQLAlchemy Base
+class Base(DeclarativeBase): 
+    pass
 db = SQLAlchemy(model_class=Base)
 
+# Init Flask
 app = Flask(__name__)
+
+# Add db to Flask
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///application.db"
 db.init_app(app)
 
+# Bootstrap + PasswordHasher Init
 bootstrap = Bootstrap5(app)
-
 ph = PasswordHasher()
 
+# CSRF Protection
 app.config['SECRET_KEY'] = '*@tkQdMMe^}ZW8_KUqTvj!wcr9=_Up8h3zpKpeT=we-xbRY,%.'
 csrf = CSRFProtect(app)
+
+# Flask Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return db.get_or_404(User, user_id)
 
 # =============== Configure Users Database =============== #
 
@@ -59,8 +74,8 @@ def home():
 
 @app.route("/login")
 def login():
-    # Replaces check_password_hash() with argon2
 
+    # Password Hasher
     # try:
     #     # Returns True if successful, or raises an error if mismatched
     #     return ph.verify(hash_from_db, password_attempt)
@@ -69,16 +84,19 @@ def login():
 
     return render_template("login.html")
 
+
 @app.route("/register", methods=["POST", "GET"])
 def register():
     registerForm = RegisterForm()
 
 
     if registerForm.validate_on_submit():
+        # Get Form Data
         username = registerForm.username.data
         email = registerForm.email.data
         password = ph.hash(registerForm.password.data)
 
+        # Creating + Append New User to db
         new_user = User(
             username=username,
             email=email,
@@ -88,11 +106,19 @@ def register():
         db.session.add(new_user)
         db.session.commit()
 
+        login_user(new_user)
+
+        return render_template("dashboard.html")
+
     return render_template("register.html", registerForm=registerForm)
 
+
 @app.route("/dashboard")
+@login_required
 def dashboard():
     return render_template("dashboard.html")
+
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=3000)
