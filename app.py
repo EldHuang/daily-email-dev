@@ -1,6 +1,6 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, redirect, url_for
 from flask_wtf.csrf import CSRFProtect
-from flask_login import LoginManager, login_required
+from flask_login import LoginManager, login_required, login_user, logout_user, UserMixin
 
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -45,7 +45,7 @@ def load_user(user_id):
 
 # =============== Configure Users Database =============== #
 
-class User(db.Model):
+class User(db.Model, UserMixin):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
 
     # Login Details
@@ -84,17 +84,20 @@ def login():
 
     return render_template("login.html")
 
-
 @app.route("/register", methods=["POST", "GET"])
 def register():
     registerForm = RegisterForm()
-
 
     if registerForm.validate_on_submit():
         # Get Form Data
         username = registerForm.username.data
         email = registerForm.email.data
         password = ph.hash(registerForm.password.data)
+
+        # Redirect to log in if user exists already
+        exist = db.session.execute(db.select(User).where(User.username == username)).first()
+        if exist is not None:
+            return redirect(url_for("login"))
 
         # Creating + Append New User to db
         new_user = User(
@@ -107,8 +110,7 @@ def register():
         db.session.commit()
 
         login_user(new_user)
-
-        return render_template("dashboard.html")
+        return redirect(url_for("dashboard"))
 
     return render_template("register.html", registerForm=registerForm)
 
@@ -118,7 +120,11 @@ def register():
 def dashboard():
     return render_template("dashboard.html")
 
+@app.route("/logout")
+def logout():
+    logout_user()
 
+    return redirect(url_for("home"))
 
 if __name__ == "__main__":
     app.run(debug=True, port=3000)
