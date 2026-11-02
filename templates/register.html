@@ -1,13 +1,22 @@
 {% extends "base.html" %} {% from 'bootstrap/form.html' import render_form %}
 
 {% block title %}Register{% endblock %}
-<link href="../static/forms.css" rel="stylesheet" />
 
 {% block body %}
 
     <div class="d-flex justify-content-center align-items-center min-vh-100">
         <div class="card p-4 shadow-sm" style="width: 30vw; max-width: 75vw;">
             <h3 class="card-title text-center mb-4">Register</h3>
+
+            <div class="flash">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                      {% for category, message in messages %}
+                        <p class="{{ category }}">{{ message }}</p>
+                      {% endfor %}
+                  {% endif %}
+                {% endwith %}
+            </div>
 
             {{ render_form(registerForm) }}
         </div>

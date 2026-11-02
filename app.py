@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, render_template, redirect, url_for, flash
 from flask_wtf.csrf import CSRFProtect
 from flask_login import LoginManager, login_required, login_user, logout_user, UserMixin
 
@@ -72,17 +72,30 @@ with app.app_context():
 def home():
     return render_template("index.html")
 
-@app.route("/login")
+@app.route("/login", methods=["GET", "POST"])
 def login():
+    loginForm = LoginForm()
 
-    # Password Hasher
-    # try:
-    #     # Returns True if successful, or raises an error if mismatched
-    #     return ph.verify(hash_from_db, password_attempt)
-    # except VerifyMismatchError:
-    #     return False
+    if loginForm.validate_on_submit():
+        username = loginForm.username.data
+        password = loginForm.password.data
 
-    return render_template("login.html")
+        # Redirect to register if user does not exist
+        user = db.session.execute(db.select(User).where(User.username == username)).scalar()
+        if user is None:
+            flash("User not found, please register")
+            return redirect(url_for("register"))
+
+        try:
+            ph.verify(user.password, password)
+            login_user(user)
+
+            return redirect(url_for("dashboard"))
+        except VerifyMismatchError:
+            flash("Incorrect Password")
+
+
+    return render_template("login.html", loginForm=loginForm)
 
 @app.route("/register", methods=["POST", "GET"])
 def register():
@@ -97,6 +110,7 @@ def register():
         # Redirect to log in if user exists already
         exist = db.session.execute(db.select(User).where(User.username == username)).first()
         if exist is not None:
+            flash("Account already exists. Please login")
             return redirect(url_for("login"))
 
         # Creating + Append New User to db

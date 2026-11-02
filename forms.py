@@ -7,3 +7,8 @@ class RegisterForm(FlaskForm):
     email  = EmailField('Email', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
     submit = SubmitField('Submit', render_kw={"text-align": "center"})
+
+class LoginForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    submit = SubmitField('Submit', render_kw={"text-align": "center"})
